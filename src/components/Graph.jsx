@@ -4,6 +4,11 @@ import { DiaryStateContext } from '../App';
 import { useNavigate } from 'react-router-dom';
 import Header from './Header';
 import Button from './Button';
+import emotion1 from '../assets/emotion1.png';
+import emotion2 from '../assets/emotion2.png';
+import emotion3 from '../assets/emotion3.png';
+import emotion4 from '../assets/emotion4.png';
+import emotion5 from '../assets/emotion5.png';
 
 const Graph = () => {
 
@@ -58,6 +63,17 @@ const Graph = () => {
 
     const months = Object.keys(monthlyStats);
 
+    const getEmotionImg = (id) => {
+        const emotionImages = {
+            1: emotion1,
+            2: emotion2,
+            3: emotion3,
+            4: emotion4,
+            5: emotion5,
+        };
+        return emotionImages[id];
+    };
+
     return (
         <div className="Graph">
             <h3>감정 통계</h3>
@@ -91,7 +107,18 @@ const Graph = () => {
                     <section key={month}>
                         <h4>{month}월</h4>
                         {/* 추가하신 문구 부분 */}
-                        <p>이번 달은 <strong>{emotionLabels[maxIndex]}</strong> 감정이 가장 많으셨군요!</p>
+                        <p>
+                            이번 달은
+                            <img
+                                src={getEmotionImg(maxIndex + 1)}
+                                alt={emotionLabels[maxIndex]}
+                                style={{ width: "30px", verticalAlign: "middle", margin: "0 5px" }}
+                            />
+                            <strong style={{ color: emotionColors[maxIndex + 1], marginLeft: "5px", marginRight: "5px" }}>
+                                {emotionLabels[maxIndex]}
+                            </strong>
+                            감정이 가장 많으셨군요!
+                        </p>
 
                         <div className="bar_container">
                             {[1, 2, 3, 4, 5].map((emotionId) => (
