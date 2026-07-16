@@ -1,7 +1,7 @@
 import './Graph.css';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { DiaryStateContext } from '../App';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Header from './Header';
 import Button from './Button';
 import emotion1 from '../assets/emotion1.png';
@@ -11,130 +11,77 @@ import emotion4 from '../assets/emotion4.png';
 import emotion5 from '../assets/emotion5.png';
 
 const Graph = () => {
-
+    const { targetMonth } = useParams();
+    const data = useContext(DiaryStateContext);
     const navigate = useNavigate();
 
-    const goBack = () => { navigate(-1); }
+    const emotionColors = { 1: "#64c964", 2: "#9dd772", 3: "#fdce17", 4: "#fd8446", 5: "#fd565f" };
+    const labels = ["매우 좋음", "좋음", "그럭저럭", "나쁨", "매우 나쁨"];
 
-    const data = useContext(DiaryStateContext);
-
-    const monthlyStats = {};
-
-    const emotionColors = {
-        1: "#64c964",
-        2: "#9dd772",
-        3: "#fdce17",
-        4: "#fd8446",
-        5: "#fd565f",
-    };
-
-    //감정별 계수 계산하기
-    const counts = [0, 0, 0, 0, 0];
-
-    for (let i = 0; i < data.length; i++) {
-
-        const emotionId = data[i].emotionId;
-        counts[emotionId - 1] += 1;
-
-    }
-
-    console.log("데이터 개수:", data.length);
-    console.log("계산된 감정별 개수:", counts);
-
-    const graphData = [
-        { label: "매우 좋음", count: counts[0], id: 1 },
-        { label: "좋음", count: counts[1], id: 2 },
-        { label: "그럭저럭", count: counts[2], id: 3 },
-        { label: "나쁨", count: counts[3], id: 4 },
-        { label: "매우 나쁨", count: counts[4], id: 5 },
-    ];
-
-    for (let i = 0; i < data.length; i++) {
-        const item = data[i];
+    // 1. 해당 월 데이터만 계산
+    const targetStats = [0, 0, 0, 0, 0];
+    data.forEach((item) => {
         const date = new Date(item.date);
         const yearMonth = `${date.getFullYear()}-${date.getMonth() + 1}`;
-
-        if (!monthlyStats[yearMonth]) {
-            monthlyStats[yearMonth] = [0, 0, 0, 0, 0];
+        if (yearMonth === targetMonth) {
+            targetStats[item.emotionId - 1] += 1;
         }
+    });
 
-        monthlyStats[yearMonth][item.emotionId - 1] += 1;
-    }
-
-    const months = Object.keys(monthlyStats);
+    const maxCount = Math.max(...targetStats);
+    const maxIndex = targetStats.indexOf(maxCount);
 
     const getEmotionImg = (id) => {
-        const emotionImages = {
-            1: emotion1,
-            2: emotion2,
-            3: emotion3,
-            4: emotion4,
-            5: emotion5,
-        };
-        return emotionImages[id];
+        const images = { 1: emotion1, 2: emotion2, 3: emotion3, 4: emotion4, 5: emotion5 };
+        return images[id];
     };
+
+
+    const hasData = targetStats.some(count => count > 0);
+
+    const [isStatsVisible, setIsStatsVisible] = useState(false);
 
     return (
         <div className="Graph">
-            <h3>감정 통계</h3>
-            <Header
-                leftchild={<Button text={"< 뒤로가기"} onClick={goBack} />}
-            />
-            <div className="bar_container">
-                {graphData.map((it) => (
+            <h3>{targetMonth} 감정 통계</h3>
+            <Header leftchild={<Button text={"< 뒤로가기"} onClick={() => navigate(-1)} />} />
 
-                    <div key={it.id} className="bar_wrapper">
-                        <div className='bar' style={{
-                            height: `${it.count * 2}px`,
-                            backgroundColor: emotionColors[it.id]
-                        }}></div>
-                        <span>{it.label}</span>
-                        <div>{it.count}</div>
-                    </div>
-                ))}
-            </div>
-
-            <hr />
-
-            <h3>월별 상세 통계</h3>
-            {months.map((month) => {
-                const counts = monthlyStats[month];
-                const maxCount = Math.max(...counts);
-                const maxIndex = counts.indexOf(maxCount);
-                const emotionLabels = ["매우 좋음", "좋음", "그럭저럭", "나쁨", "매우 나쁨"];
-
-                return (
-                    <section key={month}>
-                        <h4>{month}월</h4>
-                        {/* 추가하신 문구 부분 */}
-                        <p>
+            {!hasData ? (
+                <p>이번 달에 작성된 일기가 없습니다.</p>
+            ) : (
+                <>
+                    {/* 통계보기 버튼 또는 결과 박스 */}
+                    {!isStatsVisible ? (
+                        <button onClick={() => setIsStatsVisible(true)} className="stats_toggle_btn">
+                            통계보기
+                        </button>
+                    ) : (
+                        <div className="stats_result_box">
                             이번 달은
-                            <img
-                                src={getEmotionImg(maxIndex + 1)}
-                                alt={emotionLabels[maxIndex]}
-                                style={{ width: "30px", verticalAlign: "middle", margin: "0 5px" }}
-                            />
-                            <strong style={{ color: emotionColors[maxIndex + 1], marginLeft: "5px", marginRight: "5px" }}>
-                                {emotionLabels[maxIndex]}
-                            </strong>
+                            <img src={getEmotionImg(maxIndex + 1)} style={{ width: "30px", verticalAlign: "middle", margin: "0 5px" }} />
+                            <strong style={{ color: emotionColors[maxIndex + 1] }}>{labels[maxIndex]}</strong>
                             감정이 가장 많으셨군요!
-                        </p>
-
-                        <div className="bar_container">
-                            {[1, 2, 3, 4, 5].map((emotionId) => (
-                                <div key={emotionId} className="bar_wrapper">
-                                    <div className='bar' style={{
-                                        height: `${monthlyStats[month][emotionId - 1] * 5}px`,
-                                        backgroundColor: emotionColors[emotionId]
-                                    }}></div>
-                                    <span>{emotionLabels[emotionId - 1]}</span>
-                                    <div>{monthlyStats[month][emotionId - 1]}</div>
-                                </div>
-                            ))}
+                            <span style={{ marginLeft: "10px", fontSize: "0.9em", color: "#666" }}>
+                                (총 {maxCount}회)
+                            </span>
                         </div>
-                    </section>
-                );
-            })}
+                    )}
+
+                    {/* 막대 그래프 부분 */}
+                    <div className="bar_container">
+                        {[1, 2, 3, 4, 5].map((id) => (
+                            <div key={id} className="bar_wrapper">
+                                <div className='bar' style={{
+                                    height: `${targetStats[id - 1] * 10}px`,
+                                    backgroundColor: emotionColors[id]
+                                }}></div>
+                                <img src={getEmotionImg(id)} style={{ width: "25px", marginTop: "10px" }} />
+                                <div>{targetStats[id - 1]}</div>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            )}
         </div>
     );
 }

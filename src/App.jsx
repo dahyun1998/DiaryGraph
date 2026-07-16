@@ -89,7 +89,7 @@ const App = () => {
           <Route path="/new" element={<New />}> </Route>
           <Route path="/diary/:id" element={<Diary />}> </Route>
           <Route path="/edit/:id" element={<Edit />}> </Route>
-          <Route path="/stats" element={<Graph/>}/>
+          <Route path="/stats/:targetMonth" element={<Graph/>}/>
         </Routes>
        </DiaryDispatchContext.Provider>
       </DiaryStateContext.Provider>

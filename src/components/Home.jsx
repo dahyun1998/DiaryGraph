@@ -1,4 +1,4 @@
-import { useSearchParams, useNavigate  } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import Button from "./Button";
 import Header from "./Header";
 import Editor from "./Editor";
@@ -40,6 +40,16 @@ const Home = () => {
         }
     }, [data, pivotDate]);
 
+    const [currentDate, setCurrentDate] = useState(new Date());
+
+    const goStats = () => {
+        const year = pivotDate.getFullYear();
+        const month = pivotDate.getMonth() + 1;
+
+        // 해당 달 정보를 담아 이동합니다.
+        navigate(`/stats/${year}-${month}`);
+    }
+
     return (
         <>
             <div>Home 페이지</div>
@@ -48,13 +58,7 @@ const Home = () => {
                     title={headerTitle}
                     leftchild={<Button text="<" onClick={onDecreaseMonth} />}
                     rightchild={<Button text=">" onClick={onIncreaseMonth} />} />
-                <Button
-                    text={"감정 통계 보기"}
-                    onClick={() => {
-                        console.log("버튼 클릭됨!"); // 이게 콘솔에 찍히는지 확인
-                        navigate("/stats");
-                    }}
-                />
+                <Button text={"감정 통계 보기"} onClick={goStats} />;
                 <DiaryList data={filteredData} />
             </div>
         </>
